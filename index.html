@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PyView Split Version</title>
+  <script src="pyview.js" defer></script>
+</head>
+
+<body>
+  <h1 id="output">Hello, stranger!</h1>
+
+  <input id="name" placeholder="Enter your name" />
+
+  <button onclick="run('greet')">Say Hello</button>
+  <button onclick="run('reset')">Reset</button>
+  <button onclick="run('notify')">Notify</button>
+  <button onclick="run('debug')">Debug</button>
+  <button onclick="run('toggle_info')">Toggle Info</button>
+
+  <p id="extra" style="display: none;">This is extra content!</p>
+  <p id="info" style="display: none;">This is the info panel!</p>
+</body>
+</html>

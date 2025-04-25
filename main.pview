@@ -1,0 +1,23 @@
+def greet():
+    name = get("name")
+    if name == "":
+        set("Please enter your name.")
+    else:
+        set("Hello, " + name)
+        style("output", "color", "green")
+        show("extra")
+
+def reset():
+    clear("name")
+    set("")
+    hide("extra")
+
+def notify():
+    alert("You clicked Notify!")
+
+def debug():
+    print("Debugging...")
+    append("output", " (debug)")
+
+def toggle_info():
+    toggle("info")

@@ -28,6 +28,17 @@ function evalCondition(condition, vars) {
   }
 }
 
+function evalExpression(expr, vars) {
+  let replaced = expr.replace(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g, (match) => {
+    return vars.hasOwnProperty(match) ? JSON.stringify(vars[match]) : `"${match}"`;
+  });
+  try {
+    return eval(replaced);
+  } catch {
+    return expr.replace(/['"]/g, "");
+  }
+}
+
 function get(id) {
   return document.getElementById(id).value;
 }
@@ -86,19 +97,22 @@ function executeLine(line, vars) {
       vars[varName] = vars[expr] || expr.replace(/['"]/g, "");
     }
   } else if (line.startsWith('set(')) {
-    const value = line.slice(4, -1).replace(/['"]/g, "");
-    set(value);
+    const expr = line.slice(4, -1);
+    set(evalExpression(expr, vars));
   } else if (line.startsWith('clear(')) {
     const id = line.slice(6, -1).replace(/['"]/g, "");
     clear(id);
   } else if (line.startsWith('print(')) {
-    const value = line.slice(6, -1).replace(/['"]/g, "");
-    print(value);
+    const expr = line.slice(6, -1);
+    print(evalExpression(expr, vars));
   } else if (line.startsWith('alert(')) {
-    const value = line.slice(6, -1).replace(/['"]/g, "");
-    alertUser(value);
+    const expr = line.slice(6, -1);
+    alertUser(evalExpression(expr, vars));
   } else if (line.startsWith('style(')) {
-    const [id, prop, val] = line.slice(6, -1).split(',').map(x => x.trim().replace(/['"]/g, ""));
+    const [idExpr, propExpr, valExpr] = line.slice(6, -1).split(',').map(x => x.trim());
+    const id = evalExpression(idExpr, vars);
+    const prop = evalExpression(propExpr, vars);
+    const val = evalExpression(valExpr, vars);
     style(id, prop, val);
   } else if (line.startsWith('toggle(')) {
     const id = line.slice(7, -1).replace(/['"]/g, "");
@@ -110,8 +124,8 @@ function executeLine(line, vars) {
     const id = line.slice(5, -1).replace(/['"]/g, "");
     hide(id);
   } else if (line.startsWith('append(')) {
-    const [id, text] = line.slice(7, -1).split(',').map(x => x.trim().replace(/['"]/g, ""));
-    append(id, text);
+    const [idExpr, textExpr] = line.slice(7, -1).split(',').map(x => x.trim());
+    append(evalExpression(idExpr, vars), evalExpression(textExpr, vars));
   }
 }
 

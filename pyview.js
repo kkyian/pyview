@@ -10,7 +10,8 @@ function parseScript(text) {
       currentFunc = name;
       functions[name] = [];
     } else if (currentFunc && trimmed) {
-      functions[currentFunc].push(trimmed);
+      // Preserve indentation for proper block handling
+      functions[currentFunc].push(line);
     }
   }
 }
@@ -125,28 +126,35 @@ function run(funcName) {
   let i = 0;
 
   while (i < code.length) {
-    const line = code[i].trim();
+    const rawLine = code[i];
+    const line = rawLine.trim();
 
     if (line.startsWith('if ')) {
-      const condition = line.slice(3).trim();
+      let condition = line.slice(3).trim();
+      if (condition.endsWith(':')) {
+        condition = condition.slice(0, -1).trim();
+      }
       const condResult = evalCondition(condition, vars);
       i++;
-      if (condResult) {
+
+      const ifLines = [];
+      while (i < code.length && code[i].startsWith('    ') && !code[i].trim().startsWith('else')) {
+        ifLines.push(code[i]);
+        i++;
+      }
+
+      let elseLines = [];
+      if (i < code.length && code[i].trim().startsWith('else')) {
+        i++; // skip the else line
         while (i < code.length && code[i].startsWith('    ')) {
-          executeLine(code[i].trim(), vars);
+          elseLines.push(code[i]);
           i++;
         }
-      } else {
-        while (i < code.length && code[i].startsWith('    ')) {
-          i++;
-        }
-        if (i < code.length && code[i].trim() === "else") {
-          i++;
-          while (i < code.length && code[i].startsWith('    ')) {
-            executeLine(code[i].trim(), vars);
-            i++;
-          }
-        }
+      }
+
+      const linesToRun = condResult ? ifLines : elseLines;
+      for (const l of linesToRun) {
+        executeLine(l.trim(), vars);
       }
     } else {
       executeLine(line, vars);
